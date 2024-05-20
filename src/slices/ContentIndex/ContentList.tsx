@@ -22,10 +22,10 @@ export default function ContentList({
   fallbackItemImage,
   viewMoreText = "Read More",
 }: ContentListProps) {
-  const component = useRef(null);
-  const itemsRef = useRef<Array<HTMLLIElement | null>>([]);
+  const component = useRef<HTMLUListElement | null>(null);
+  const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
 
-  const revealRef = useRef(null);
+  const revealRef = useRef<HTMLDivElement | null>(null);
   const [currentItem, setCurrentItem] = useState<null | number>(null);
   const [hovering, setHovering] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
@@ -36,26 +36,28 @@ export default function ContentList({
     // Animate list-items in with a stagger
     let ctx = gsap.context(() => {
       itemsRef.current.forEach((item, index) => {
-        gsap.fromTo(
-          item,
-          {
-            opacity: 0,
-            y: 20,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.3,
-            ease: "elastic.out(1,0.3)",
-            stagger: 0.2,
-            scrollTrigger: {
-              trigger: item,
-              start: "top bottom-=100px",
-              end: "bottom center",
-              toggleActions: "play none none none",
+        if (item) {
+          gsap.fromTo(
+            item,
+            {
+              opacity: 0,
+              y: 20,
             },
-          },
-        );
+            {
+              opacity: 1,
+              y: 0,
+              duration: 1.3,
+              ease: "elastic.out(1,0.3)",
+              stagger: 0.2,
+              scrollTrigger: {
+                trigger: item,
+                start: "top bottom-=100px",
+                end: "bottom center",
+                toggleActions: "play none none none",
+              },
+            }
+          );
+        }
       });
 
       return () => ctx.revert(); // cleanup!
@@ -142,13 +144,15 @@ export default function ContentList({
         {items.map((post, index) => (
           <li
             key={index}
-            // ref={(el) => (itemsRef.current[index] = el)}
+            ref={(el) => {
+              itemsRef.current[index] = el;
+            }}
             onMouseEnter={() => onMouseEnter(index)}
             className="list-item opacity-0"
           >
             <a
               href={`${urlPrefix}/${post.uid}`}
-              className="flex flex-col justify-between border-t border-t-slate-100 py-10  text-slate-200 md:flex-row "
+              className="flex flex-col justify-between border-t border-t-slate-100 py-10 text-slate-200 md:flex-row"
               aria-label={post.data.title || ""}
             >
               <div className="flex flex-col">
